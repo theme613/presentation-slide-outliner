@@ -2,9 +2,6 @@ import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
 import { PollyClient, SynthesizeSpeechCommand } from "@aws-sdk/client-polly";
 import { BedrockRuntimeClient, InvokeModelCommand } from "@aws-sdk/client-bedrock-runtime";
-import { createRequire } from "module";
-const require = createRequire(import.meta.url);
-const pdfParse = require("pdf-parse");
 
 // AWS Clients initialized with standard SDK credentials provider (relies on env vars, IAM, etc.)
 const awsConfig = process.env.AWS_REGION ? { region: process.env.AWS_REGION } : null;
@@ -49,18 +46,9 @@ export async function POST(req) {
                 }
             }
 
-            // Extract text for AI Context
-            if (file.type === "application/pdf" || file.name.endsWith(".pdf")) {
-                try {
-                    const data = await pdfParse(buffer);
-                    fileContext = data.text;
-                } catch (err) {
-                    console.error("PDF Parse Error:", err);
-                    fileContext = "Error reading PDF file structure.";
-                }
-            } else {
-                fileContext = buffer.toString("utf-8");
-            }
+            // Extract text content from uploaded file
+            // Read as UTF-8 text (works for .txt, .md, .csv, and similar text formats)
+            fileContext = buffer.toString("utf-8");
         }
 
         // 2. Call Amazon Bedrock (Anthropic Claude 3 Haiku)
