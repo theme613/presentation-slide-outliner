@@ -68,28 +68,37 @@ export async function POST(req) {
     `;
 
         const bedrockPayload = {
-            anthropic_version: "bedrock-2023-05-31",
-            max_tokens: 4000,
-            temperature: 0.7,
-            messages: [
-                {
-                    role: "user",
-                    content: [{ type: "text", text: prompt }]
-                }
-            ]
+            inputText: prompt,
+            textGenerationConfig: {
+                maxTokenCount: 4000,
+                temperature: 0.7,
+                topP: 0.9,
+            }
         };
 
         const command = new InvokeModelCommand({
-            // Claude 3 Haiku is very fast and cheap, perfect for a portfolio project.
-            modelId: "anthropic.claude-3-haiku-20240307-v1:0",
+            // Amazon Nova Lite - available immediately, no use case form needed.
+            modelId: "amazon.nova-lite-v1:0",
             contentType: "application/json",
             accept: "application/json",
-            body: JSON.stringify(bedrockPayload),
+            body: JSON.stringify({
+                messages: [
+                    {
+                        role: "user",
+                        content: [{ text: prompt }]
+                    }
+                ],
+                inferenceConfig: {
+                    maxTokens: 4000,
+                    temperature: 0.7,
+                    topP: 0.9,
+                }
+            }),
         });
 
         const response = await bedrock.send(command);
         const responseBody = JSON.parse(new TextDecoder().decode(response.body));
-        const aiText = responseBody.content[0].text;
+        const aiText = responseBody.output.message.content[0].text;
 
         // Clean up markdown formatting if the model wraps the response in code blocks
         let jsonString = aiText.trim();
