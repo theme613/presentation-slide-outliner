@@ -1,0 +1,64 @@
+# AWS Setup Instructions for Presentation Slide Outliner
+
+This project is 100% AWS-powered to showcase your cloud skills using your $100 credit. Follow these exact steps to obtain the necessary credentials.
+
+## 1. Amazon Bedrock (AI Generation)
+1. Go to the AWS Console -> Amazon Bedrock.
+2. In the left navigation pane under "Bedrock configurations", select **Model access**.
+3. Click "Manage model access" in the top right.
+4. Check the box for **Anthropic -> Claude 3 Haiku**.
+5. Click "Save changes". It may take a few minutes for the status to change to "Access granted".
+
+## 2. Amazon S3 (File & Audio Storage)
+1. Go to the AWS Console -> S3.
+2. Click "Create bucket".
+3. Give it a globally unique name (e.g., `slide-outliner-portfolio-yourname`).
+4. Keep the region exactly the same as the rest of your resources (e.g., `us-east-1`).
+5. Choose ACLs disabled (recommended).
+6. Provide a policy or uncheck "Block all public access" ONLY if you want the generated Audio/PDF files to be entirely public on the internet. Otherwise, keep it blocked.
+7. Click "Create bucket".
+
+## 3. Amazon DynamoDB (Database)
+1. Go to the AWS Console -> DynamoDB.
+2. Click "Create table".
+3. Set Table name to `slide-outlines`.
+4. Set the Partition key to `id` (String).
+5. Leave everything else as default and create the table.
+
+## 4. IAM User (Getting your Access Keys)
+1. Go to the AWS Console -> IAM.
+2. Go to "Users" -> "Create user" (name it e.g., `slide-outliner-app`).
+3. Click "Attach policies directly".
+4. Search for and attach the following policies:
+   - `AmazonS3FullAccess`
+   - `AmazonDynamoDBFullAccess`
+   - `AmazonBedrockFullAccess`
+   - `AmazonPollyFullAccess`
+   *Note: For a real production app, you would create custom policies with least-privilege access, but full access is fine for a hackathon/portfolio project using free credits.*
+5. Create the user.
+6. Open the user you just created, go to the "Security credentials" tab.
+7. Scroll down to "Access keys" and click "Create access key".
+8. Choose "Application running outside AWS" (or Local code).
+9. Copy your Access Key ID and Secret Access Key immediately (you won't be able to see the secret key again).
+
+---
+
+## 5. Local Environment Variables
+Create a file named `.env.local` in the root of your Next.js project directory (`d:\PROJECT\presentation-slide-outliner`) and paste the following block exactly, filling in the keys you just generated:
+
+```env
+# Your IAM User Credentials
+AWS_ACCESS_KEY_ID=your_access_key_id_here
+AWS_SECRET_ACCESS_KEY=your_secret_access_key_here
+
+# The AWS Region you created your resources in (e.g., us-east-1, us-west-2)
+AWS_REGION=us-east-1
+
+# S3
+S3_BUCKET_NAME=your_s3_bucket_name_here
+
+# DynamoDB
+DYNAMODB_TABLE_NAME=slide-outlines
+```
+
+Once this file is saved, run `npm run dev` in your terminal to start the application!
